@@ -73,6 +73,29 @@ func (eo EqualsOperator) Rights() Rights {
 	})
 }
 
+// NotEqualsOperator
+type (
+	INotEqualsOperator interface {
+		iNotNotEqualsOperator()
+	}
+	NotEqualsOperatorRights []INotEqualsOperatorRight
+	INotEqualsOperatorRight interface {
+		iNotEqualsOperatorRight()
+		Right() Right
+	}
+	NotEqualsOperator struct {
+		RightsAccessor NotEqualsOperatorRights
+	}
+)
+
+func (NotEqualsOperator) ToString() string     { return "!=" }
+func (NotEqualsOperator) iComparisonOperator() {}
+func (eo NotEqualsOperator) Rights() Rights {
+	return lo.Map(eo.RightsAccessor, func(item INotEqualsOperatorRight, index int) Right {
+		return item.Right()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -84,11 +107,12 @@ type (
 	}
 )
 
-func (LiteralValue) iEqualsOperatorRight() {}
-func (LiteralValue) iRight()               {}
-func (lv LiteralValue) Right() Right       { return lv }
-func (lv LiteralValue) valid(e any) bool   { return lv.ValueType.valid(e) }
-func (LiteralValue) nodeType() string      { return "*sqlparser.Literal" }
+func (LiteralValue) iEqualsOperatorRight()    {}
+func (LiteralValue) iNotEqualsOperatorRight() {}
+func (LiteralValue) iRight()                  {}
+func (lv LiteralValue) Right() Right          { return lv }
+func (lv LiteralValue) valid(e any) bool      { return lv.ValueType.valid(e) }
+func (LiteralValue) nodeType() string         { return "*sqlparser.Literal" }
 
 // StringValue
 type StringValue struct {

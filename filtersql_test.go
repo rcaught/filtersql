@@ -27,6 +27,15 @@ func commonConfig() fs.Config {
 								},
 							},
 						},
+						fs.NotEqualsOperator{
+							fs.NotEqualsOperatorRights{
+								fs.LiteralValue{
+									fs.StringValue{
+										ValidationFunc: func(val string) bool { return val == "test" },
+									},
+								},
+							},
+						},
 					},
 				},
 				fs.Column{
@@ -127,3 +136,33 @@ func TestFilterSQLParseComparisonsLiteralInteger(t *testing.T) {
 	assert.EqualError(t, err, "unsupported or invalid RHS: b = 3")
 	assert.Equal(t, "", parsedQuery)
 }
+
+// Operators
+
+func TestFilterSQLParseUnsupportedOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "a > 'test'"
+	parsedQuery, err := config.Parse(query)
+	assert.EqualError(t, err, "unsupported operator: a > 'test'")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseEqualsOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "a = 'test'"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a = 'test'", parsedQuery)
+}
+
+func TestFilterSQLParseNotEqualsOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "a != 'test'"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a != 'test'", parsedQuery)
+}
+
