@@ -119,6 +119,10 @@ func (iv IntegerValue) valid(s any) bool {
 func (IntegerValue) nodeType() string { return LiteralValue{}.nodeType() }
 
 func (config Config) Parse(filter string) (string, error) {
+	if strings.Trim(filter, " ") == "" {
+		return "", nil
+	}
+
 	sqlBlob := fmt.Sprintf("SELECT * FROM `not_a_table` WHERE %s", filter)
 	sql, _, err := sqlparser.SplitStatement(sqlBlob)
 	if err != nil {

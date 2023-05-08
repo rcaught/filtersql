@@ -49,6 +49,15 @@ func commonConfig() fs.Config {
 	}
 }
 
+func TestFilterSQLParseEmpty(t *testing.T) {
+	config := commonConfig()
+
+	query := ""
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "", parsedQuery)
+}
+
 func TestFilterSQLParseAnd(t *testing.T) {
 	config := commonConfig()
 
