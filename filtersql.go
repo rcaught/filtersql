@@ -53,7 +53,7 @@ func (Column) iLeft() {}
 // EqualsOperator
 type (
 	IEqualsOperator interface {
-		iNotEqualsOperator()
+		iEqualsOperator()
 	}
 	EqualsOperatorRights []IEqualsOperatorRight
 	IEqualsOperatorRight interface {
@@ -76,7 +76,7 @@ func (eo EqualsOperator) Rights() Rights {
 // NotEqualsOperator
 type (
 	INotEqualsOperator interface {
-		iNotNotEqualsOperator()
+		iNotEqualsOperator()
 	}
 	NotEqualsOperatorRights []INotEqualsOperatorRight
 	INotEqualsOperatorRight interface {
@@ -99,7 +99,7 @@ func (eo NotEqualsOperator) Rights() Rights {
 // GreaterThanOperator
 type (
 	IGreaterThanOperator interface {
-		iNotGreaterThanOperator()
+		iGreaterThanOperator()
 	}
 	GreaterThanOperatorRights []IGreaterThanOperatorRight
 	IGreaterThanOperatorRight interface {
@@ -122,7 +122,7 @@ func (eo GreaterThanOperator) Rights() Rights {
 // LessThanOperator
 type (
 	ILessThanOperator interface {
-		iNotLessThanOperator()
+		iLessThanOperator()
 	}
 	LessThanOperatorRights []ILessThanOperatorRight
 	ILessThanOperatorRight interface {
@@ -145,7 +145,7 @@ func (eo LessThanOperator) Rights() Rights {
 // GreaterThanOrEqualOperator
 type (
 	IGreaterThanOrEqualOperator interface {
-		iNotGreaterThanOrEqualOperator()
+		iGreaterThanOrEqualOperator()
 	}
 	GreaterThanOrEqualOperatorRights []IGreaterThanOrEqualOperatorRight
 	IGreaterThanOrEqualOperatorRight interface {
@@ -168,7 +168,7 @@ func (eo GreaterThanOrEqualOperator) Rights() Rights {
 // LessThanOrEqualOperator
 type (
 	ILessThanOrEqualOperator interface {
-		iNotLessThanOrEqualOperator()
+		iLessThanOrEqualOperator()
 	}
 	LessThanOrEqualOperatorRights []ILessThanOrEqualOperatorRight
 	ILessThanOrEqualOperatorRight interface {
