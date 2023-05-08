@@ -78,6 +78,15 @@ func commonConfig() fs.Config {
 								},
 							},
 						},
+						fs.LessThanOrEqualOperator{
+							fs.LessThanOrEqualOperatorRights{
+								fs.LiteralValue{
+									fs.IntegerValue{
+										ValidationFunc: func(val int) bool { return val == 2 },
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -218,5 +227,14 @@ func TestFilterSQLParseGreaterThanOrEqualOperator(t *testing.T) {
 	parsedQuery, err := config.Parse(query)
 	assert.NoError(t, err)
 	assert.Equal(t, "b >= 2", parsedQuery)
+}
+
+func TestFilterSQLParseLessThanOrEqualOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "b <= 2"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "b <= 2", parsedQuery)
 }
 
