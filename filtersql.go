@@ -96,6 +96,29 @@ func (eo NotEqualsOperator) Rights() Rights {
 	})
 }
 
+// GreaterThanOperator
+type (
+	IGreaterThanOperator interface {
+		iNotGreaterThanOperator()
+	}
+	GreaterThanOperatorRights []IGreaterThanOperatorRight
+	IGreaterThanOperatorRight interface {
+		iGreaterThanOperatorRight()
+		Right() Right
+	}
+	GreaterThanOperator struct {
+		RightsAccessor GreaterThanOperatorRights
+	}
+)
+
+func (GreaterThanOperator) ToString() string     { return ">" }
+func (GreaterThanOperator) iComparisonOperator() {}
+func (eo GreaterThanOperator) Rights() Rights {
+	return lo.Map(eo.RightsAccessor, func(item IGreaterThanOperatorRight, index int) Right {
+		return item.Right()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -107,12 +130,13 @@ type (
 	}
 )
 
-func (LiteralValue) iEqualsOperatorRight()    {}
-func (LiteralValue) iNotEqualsOperatorRight() {}
-func (LiteralValue) iRight()                  {}
-func (lv LiteralValue) Right() Right          { return lv }
-func (lv LiteralValue) valid(e any) bool      { return lv.ValueType.valid(e) }
-func (LiteralValue) nodeType() string         { return "*sqlparser.Literal" }
+func (LiteralValue) iEqualsOperatorRight()      {}
+func (LiteralValue) iNotEqualsOperatorRight()   {}
+func (LiteralValue) iGreaterThanOperatorRight() {}
+func (LiteralValue) iRight()                    {}
+func (lv LiteralValue) Right() Right            { return lv }
+func (lv LiteralValue) valid(e any) bool        { return lv.ValueType.valid(e) }
+func (LiteralValue) nodeType() string           { return "*sqlparser.Literal" }
 
 // StringValue
 type StringValue struct {
