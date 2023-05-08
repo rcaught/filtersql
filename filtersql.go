@@ -119,6 +119,29 @@ func (eo GreaterThanOperator) Rights() Rights {
 	})
 }
 
+// LessThanOperator
+type (
+	ILessThanOperator interface {
+		iNotLessThanOperator()
+	}
+	LessThanOperatorRights []ILessThanOperatorRight
+	ILessThanOperatorRight interface {
+		iLessThanOperatorRight()
+		Right() Right
+	}
+	LessThanOperator struct {
+		RightsAccessor LessThanOperatorRights
+	}
+)
+
+func (LessThanOperator) ToString() string     { return "<" }
+func (LessThanOperator) iComparisonOperator() {}
+func (eo LessThanOperator) Rights() Rights {
+	return lo.Map(eo.RightsAccessor, func(item ILessThanOperatorRight, index int) Right {
+		return item.Right()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -133,6 +156,7 @@ type (
 func (LiteralValue) iEqualsOperatorRight()      {}
 func (LiteralValue) iNotEqualsOperatorRight()   {}
 func (LiteralValue) iGreaterThanOperatorRight() {}
+func (LiteralValue) iLessThanOperatorRight()    {}
 func (LiteralValue) iRight()                    {}
 func (lv LiteralValue) Right() Right            { return lv }
 func (lv LiteralValue) valid(e any) bool        { return lv.ValueType.valid(e) }
