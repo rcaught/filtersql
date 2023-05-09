@@ -122,6 +122,24 @@ func TestFilterSQLParseMultipleQueries(t *testing.T) {
 	assert.Equal(t, "", parsedQuery)
 }
 
+func TestFilterSQLParseUnsupportedExpression(t *testing.T) {
+	config := commonConfig()
+
+	query := "GROUP BY a"
+	parsedQuery, err := config.Parse(query)
+	assert.EqualError(t, err, "unsupported syntax")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseUnsupportedQualifier(t *testing.T) {
+	config := commonConfig()
+
+	query := "passwords.a = 'test"
+	parsedQuery, err := config.Parse(query)
+	assert.EqualError(t, err, "unsupported syntax")
+	assert.Equal(t, "", parsedQuery)
+}
+
 func TestFilterSQLParseAnd(t *testing.T) {
 	config := commonConfig()
 
