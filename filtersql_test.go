@@ -113,6 +113,15 @@ func TestFilterSQLParseEmpty(t *testing.T) {
 	assert.Equal(t, "", parsedQuery)
 }
 
+func TestFilterSQLParseMultipleQueries(t *testing.T) {
+	config := commonConfig()
+
+	query := "a = 'test'; select * from passwords;"
+	parsedQuery, err := config.Parse(query)
+	assert.EqualError(t, err, "unsupported syntax")
+	assert.Equal(t, "", parsedQuery)
+}
+
 func TestFilterSQLParseAnd(t *testing.T) {
 	config := commonConfig()
 

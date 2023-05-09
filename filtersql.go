@@ -317,9 +317,12 @@ func (config Config) Parse(filter string) (string, error) {
 	}
 
 	sqlBlob := fmt.Sprintf("SELECT * FROM `not_a_table` WHERE %s", filter)
-	sql, _, err := sqlparser.SplitStatement(sqlBlob)
+	sql, remainder, err := sqlparser.SplitStatement(sqlBlob)
 	if err != nil {
 		return "", err
+	}
+	if remainder != "" {
+		return "", errors.New("unsupported syntax")
 	}
 
 	stmt, err := sqlparser.Parse(sql)
