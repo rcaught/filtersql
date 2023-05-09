@@ -99,6 +99,21 @@ func commonConfig() fs.Config {
 						},
 					},
 				},
+				fs.Column{
+					"something",
+					"d",
+					fs.ComparisonOperators{
+						fs.EqualsOperator{
+							fs.EqualsOperatorRights{
+								fs.LiteralValue{
+									fs.StringValue{
+										ValidationFunc: func(val string) bool { return val == "test" },
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -175,6 +190,11 @@ func TestFilterSQLParseComparisonsColumn(t *testing.T) {
 	parsedQuery, err := config.Parse(query)
 	assert.NoError(t, err)
 	assert.Equal(t, "a = 'test'", parsedQuery)
+
+	query = "something.d = 'test'"
+	parsedQuery, err = config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "something.d = 'test'", parsedQuery)
 
 	query = "c = 'test'"
 	parsedQuery, err = config.Parse(query)
