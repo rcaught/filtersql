@@ -211,6 +211,29 @@ func (eo InOperator) Rights() Rights {
 	})
 }
 
+// NotInOperator
+type (
+	INotInOperator interface {
+		iNotInOperator()
+	}
+	NotInOperatorRights []INotInOperatorRight
+	INotInOperatorRight interface {
+		iNotInOperatorRight()
+		Right() Right
+	}
+	NotInOperator struct {
+		RightsAccessor NotInOperatorRights
+	}
+)
+
+func (NotInOperator) ToString() string     { return "not in" }
+func (NotInOperator) iComparisonOperator() {}
+func (eo NotInOperator) Rights() Rights {
+	return lo.Map(eo.RightsAccessor, func(item INotInOperatorRight, index int) Right {
+		return item.Right()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -305,11 +328,12 @@ type (
 	}
 )
 
-func (TupleValue) iInOperatorRight()   {}
-func (TupleValue) iRight()             {}
-func (tv TupleValue) Right() Right     { return tv }
-func (tv TupleValue) valid(e any) bool { return tv.ValueType.valid(e) }
-func (TupleValue) nodeType() string    { return "sqlparser.ValTuple" }
+func (TupleValue) iInOperatorRight()    {}
+func (TupleValue) iNotInOperatorRight() {}
+func (TupleValue) iRight()              {}
+func (tv TupleValue) Right() Right      { return tv }
+func (tv TupleValue) valid(e any) bool  { return tv.ValueType.valid(e) }
+func (TupleValue) nodeType() string     { return "sqlparser.ValTuple" }
 
 func (config Config) Parse(filter string) (string, error) {
 	if strings.Trim(filter, " ") == "" {

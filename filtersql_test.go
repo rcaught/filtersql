@@ -46,6 +46,15 @@ func commonConfig() fs.Config {
 								},
 							},
 						},
+						fs.NotInOperator{
+							fs.NotInOperatorRights{
+								fs.TupleValue{
+									fs.StringValues{
+										ValidationFunc: func(vals []string) bool { return lo.Every([]string{"test", "test2"}, vals) },
+									},
+								},
+							},
+						},
 					},
 				},
 				fs.Column{
@@ -311,6 +320,25 @@ func TestFilterSQLParseInOperator(t *testing.T) {
 	query = "a IN ('test', 2)"
 	parsedQuery, err = config.Parse(query)
 	assert.EqualError(t, err, "unsupported or invalid RHS: a in ('test', 2)")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseNotInOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "a NOT IN ('test', 'test2')"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a not in ('test', 'test2')", parsedQuery)
+
+	query = "a NOT IN ('test', 'test3')"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a not in ('test', 'test3')")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "a NOT IN ('test', 2)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a not in ('test', 2)")
 	assert.Equal(t, "", parsedQuery)
 }
 
