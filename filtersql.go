@@ -188,6 +188,29 @@ func (eo LessThanOrEqualOperator) Rights() Rights {
 	})
 }
 
+// InOperator
+type (
+	IInOperator interface {
+		iInOperator()
+	}
+	InOperatorRights []IInOperatorRight
+	IInOperatorRight interface {
+		iInOperatorRight()
+		Right() Right
+	}
+	InOperator struct {
+		RightsAccessor InOperatorRights
+	}
+)
+
+func (InOperator) ToString() string     { return "in" }
+func (InOperator) iComparisonOperator() {}
+func (eo InOperator) Rights() Rights {
+	return lo.Map(eo.RightsAccessor, func(item IInOperatorRight, index int) Right {
+		return item.Right()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -224,6 +247,39 @@ func (sv StringValue) valid(s any) bool {
 }
 func (StringValue) nodeType() string { return LiteralValue{}.nodeType() }
 
+// StringValues
+type StringValues struct {
+	ValidationFunc func([]string) bool
+}
+
+func (StringValues) iTupleValueType() {}
+func (StringValues) iRight()          {}
+func (sv StringValues) Right() Right  { return sv }
+func (sv StringValues) valid(s any) bool {
+	parent, ok := s.(sqlparser.ValTuple)
+
+	if ok {
+		values := lo.FilterMap(parent, func(item sqlparser.Expr, index int) (string, bool) {
+			value, ok := item.(*sqlparser.Literal)
+
+			if ok && value.Type == sqlparser.StrVal {
+				return value.Val, true
+			} else {
+				return "", false
+			}
+		})
+
+		if len(values) == len(parent) && sv.ValidationFunc(values) {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
+func (StringValues) nodeType() string { return TupleValue{}.nodeType() }
+
 // IntegerValue
 type IntegerValue struct {
 	ValidationFunc func(int) bool
@@ -237,6 +293,23 @@ func (iv IntegerValue) valid(s any) bool {
 	return ok && parent.Type == sqlparser.IntVal && iv.ValidationFunc(cast.ToInt(parent.Val))
 }
 func (IntegerValue) nodeType() string { return LiteralValue{}.nodeType() }
+
+// TupleValueType
+type (
+	ITupleValueType interface {
+		iTupleValueType()
+		valid(any) bool
+	}
+	TupleValue struct {
+		ValueType ITupleValueType
+	}
+)
+
+func (TupleValue) iInOperatorRight()   {}
+func (TupleValue) iRight()             {}
+func (tv TupleValue) Right() Right     { return tv }
+func (tv TupleValue) valid(e any) bool { return tv.ValueType.valid(e) }
+func (TupleValue) nodeType() string    { return "sqlparser.ValTuple" }
 
 func (config Config) Parse(filter string) (string, error) {
 	if strings.Trim(filter, " ") == "" {

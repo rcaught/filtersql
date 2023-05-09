@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	fs "github.com/rcaught/filtersql"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,6 +33,15 @@ func commonConfig() fs.Config {
 								fs.LiteralValue{
 									fs.StringValue{
 										ValidationFunc: func(val string) bool { return val == "test" },
+									},
+								},
+							},
+						},
+						fs.InOperator{
+							fs.InOperatorRights{
+								fs.TupleValue{
+									fs.StringValues{
+										ValidationFunc: func(vals []string) bool { return lo.Every([]string{"test", "test2"}, vals) },
 									},
 								},
 							},
@@ -236,5 +246,24 @@ func TestFilterSQLParseLessThanOrEqualOperator(t *testing.T) {
 	parsedQuery, err := config.Parse(query)
 	assert.NoError(t, err)
 	assert.Equal(t, "b <= 2", parsedQuery)
+}
+
+func TestFilterSQLParseInOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "a IN ('test', 'test2')"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a in ('test', 'test2')", parsedQuery)
+
+	query = "a IN ('test', 'test3')"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a in ('test', 'test3')")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "a IN ('test', 2)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a in ('test', 2)")
+	assert.Equal(t, "", parsedQuery)
 }
 
