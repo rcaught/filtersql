@@ -312,6 +312,39 @@ func (iv IntegerValue) valid(s any) bool {
 }
 func (IntegerValue) nodeType() string { return LiteralValue{}.nodeType() }
 
+// IntegerValues
+type IntegerValues struct {
+	ValidationFunc func([]int) bool
+}
+
+func (IntegerValues) iTupleValueType() {}
+func (IntegerValues) iRight()          {}
+func (iv IntegerValues) Right() Right  { return iv }
+func (iv IntegerValues) valid(s any) bool {
+	parent, ok := s.(sqlparser.ValTuple)
+
+	if ok {
+		values := lo.FilterMap(parent, func(item sqlparser.Expr, index int) (int, bool) {
+			value, ok := item.(*sqlparser.Literal)
+
+			if ok && value.Type == sqlparser.IntVal {
+				return cast.ToInt(value.Val), true
+			} else {
+				return 0, false
+			}
+		})
+
+		if len(values) == len(parent) && iv.ValidationFunc(values) {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		return false
+	}
+}
+func (IntegerValues) nodeType() string { return TupleValue{}.nodeType() }
+
 // TupleValueType
 type (
 	ITupleValueType interface {

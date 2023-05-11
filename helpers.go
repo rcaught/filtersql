@@ -86,6 +86,56 @@ func InOperatorStringsValue(fun func([]string) bool) IComparisonOperator {
 	}
 }
 
+func InOperatorIntegersValueAny() IComparisonOperator {
+	return InOperator{
+		RightsAccessor: InOperatorRights{
+			coTupleIntegersAny(),
+		},
+	}
+}
+
+func InOperatorIntegersValue(fun func([]int) bool) IComparisonOperator {
+	return InOperator{
+		RightsAccessor: InOperatorRights{
+			coTupleIntegersValidationFunction(fun),
+		},
+	}
+}
+
+// Not In Operator
+
+func NotInOperatorStringsValueAny() IComparisonOperator {
+	return NotInOperator{
+		RightsAccessor: NotInOperatorRights{
+			coTupleStringsAny(),
+		},
+	}
+}
+
+func NotInOperatorStringsValue(fun func([]string) bool) IComparisonOperator {
+	return NotInOperator{
+		RightsAccessor: NotInOperatorRights{
+			coTupleStringsValidationFunction(fun),
+		},
+	}
+}
+
+func NotInOperatorIntegersValueAny() IComparisonOperator {
+	return NotInOperator{
+		RightsAccessor: NotInOperatorRights{
+			coTupleIntegersAny(),
+		},
+	}
+}
+
+func NotInOperatorIntegersValue(fun func([]int) bool) IComparisonOperator {
+	return NotInOperator{
+		RightsAccessor: NotInOperatorRights{
+			coTupleIntegersValidationFunction(fun),
+		},
+	}
+}
+
 // Helpers
 
 func coLiteralStringAny() LiteralValue {
@@ -136,3 +186,18 @@ func coTupleStringsValidationFunction(fun func([]string) bool) TupleValue {
 	}
 }
 
+func coTupleIntegersAny() TupleValue {
+	return TupleValue{
+		IntegerValues{
+			ValidationFunc: func(vals []int) bool { return true },
+		},
+	}
+}
+
+func coTupleIntegersValidationFunction(fun func([]int) bool) TupleValue {
+	return TupleValue{
+		IntegerValues{
+			ValidationFunc: fun,
+		},
+	}
+}

@@ -106,6 +106,7 @@ func commonConfig() fs.Config {
 								},
 							},
 						},
+						fs.InOperatorIntegersValue(func(i []int) bool { return lo.EveryBy(i, func(item int) bool { return item%2 == 0 }) }),
 					},
 				},
 				fs.Column{
@@ -304,7 +305,7 @@ func TestFilterSQLParseLessThanOrEqualOperator(t *testing.T) {
 	assert.Equal(t, "b <= 2", parsedQuery)
 }
 
-func TestFilterSQLParseInOperator(t *testing.T) {
+func TestFilterSQLParseInOperatorStringValues(t *testing.T) {
 	config := commonConfig()
 
 	query := "a IN ('test', 'test2')"
@@ -323,13 +324,51 @@ func TestFilterSQLParseInOperator(t *testing.T) {
 	assert.Equal(t, "", parsedQuery)
 }
 
-func TestFilterSQLParseNotInOperator(t *testing.T) {
+func TestFilterSQLParseInOperatorIntegerValues(t *testing.T) {
+	config := commonConfig()
+
+	query := "b IN (2, 4)"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "b in (2, 4)", parsedQuery)
+
+	query = "b IN (2, 3)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: b in (2, 3)")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "b IN ('test', 2)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: b in ('test', 2)")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseNotInOperatorStringValues(t *testing.T) {
 	config := commonConfig()
 
 	query := "a NOT IN ('test', 'test2')"
 	parsedQuery, err := config.Parse(query)
 	assert.NoError(t, err)
 	assert.Equal(t, "a not in ('test', 'test2')", parsedQuery)
+
+	query = "a NOT IN ('test', 'test3')"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a not in ('test', 'test3')")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "a NOT IN ('test', 2)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a not in ('test', 2)")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseNotInOperatorIntegerValues(t *testing.T) {
+	config := commonConfig()
+
+	query := "a NOT IN (2, 4)"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a not in (2, 4)", parsedQuery)
 
 	query = "a NOT IN ('test', 'test3')"
 	parsedQuery, err = config.Parse(query)
