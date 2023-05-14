@@ -62,6 +62,12 @@ func (config Config) validate(filter *sqlparser.Where) error {
 			} else {
 				return config.walkError("unsupported or: %s", node)
 			}
+		case *sqlparser.NotExpr:
+			if config.Allow.Nots {
+				return true, nil
+			} else {
+				return config.walkError("unsupported not: %s", node)
+			}
 		case *sqlparser.ColName:
 			result := lo.ContainsBy(config.allowedLeftColumns(), func(item Column) bool { return node.Name.EqualString(item.Name) })
 

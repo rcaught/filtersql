@@ -14,6 +14,7 @@ func commonConfig() fs.Config {
 		Allow: fs.Allow{
 			Ands: true,
 			Ors:  true,
+			Nots: true,
 			Comparisons: fs.Comparisons{
 				fs.Column{
 					"",
@@ -190,6 +191,20 @@ func TestFilterSQLParseOr(t *testing.T) {
 	config.Allow.Ors = false
 	parsedQuery, err = config.Parse(query)
 	assert.EqualError(t, err, "unsupported or: a = 'test' or b = 2")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseNot(t *testing.T) {
+	config := commonConfig()
+
+	query := "NOT (a = 'test' OR b = 2)"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "not (a = 'test' or b = 2)", parsedQuery)
+
+	config.Allow.Nots = false
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported not: not (a = 'test' or b = 2)")
 	assert.Equal(t, "", parsedQuery)
 }
 

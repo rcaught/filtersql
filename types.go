@@ -15,6 +15,7 @@ type Allow struct {
 	Comparisons Comparisons
 	Ors         bool
 	Ands        bool
+	Nots        bool
 }
 
 type (
