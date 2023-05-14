@@ -44,11 +44,7 @@ func (config Config) Parse(filter string) (string, error) {
 func (config Config) validate(filter *sqlparser.Where) error {
 	fun := func(node sqlparser.SQLNode) (bool, error) {
 		switch node := node.(type) {
-		case *sqlparser.Where:
-			return true, nil
-		case (*sqlparser.Literal):
-			return true, nil
-		case (sqlparser.ValTuple):
+		case *sqlparser.Where, *sqlparser.Literal, sqlparser.ValTuple:
 			return true, nil
 		case *sqlparser.AndExpr:
 			if config.Allow.Ands {
