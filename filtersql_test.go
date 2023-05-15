@@ -2,9 +2,11 @@ package filtersql_test
 
 import (
 	"testing"
+	"time"
 
 	fs "github.com/rcaught/filtersql"
 	"github.com/samber/lo"
+	"github.com/spf13/cast"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,9 +19,9 @@ func commonConfig() fs.Config {
 			Nots: true,
 			Comparisons: fs.Comparisons{
 				fs.Column{
-					"",
-					"a",
-					fs.ComparisonOperators{
+					Qualifier: "",
+					Name:      "a",
+					ComparisonOperators: fs.ComparisonOperators{
 						fs.EqualsOperator{
 							fs.EqualsOperatorRights{
 								fs.LiteralValue{
@@ -59,9 +61,9 @@ func commonConfig() fs.Config {
 					},
 				},
 				fs.Column{
-					"",
-					"b",
-					fs.ComparisonOperators{
+					Qualifier: "",
+					Name:      "b",
+					ComparisonOperators: fs.ComparisonOperators{
 						fs.EqualsOperator{
 							fs.EqualsOperatorRights{
 								fs.LiteralValue{
@@ -111,15 +113,35 @@ func commonConfig() fs.Config {
 					},
 				},
 				fs.Column{
-					"something",
-					"d",
-					fs.ComparisonOperators{
+					Qualifier: "something",
+					Name:      "d",
+					ComparisonOperators: fs.ComparisonOperators{
 						fs.EqualsOperator{
 							fs.EqualsOperatorRights{
 								fs.LiteralValue{
 									fs.StringValue{
 										ValidationFunc: func(val string) bool { return val == "test" },
 									},
+								},
+							},
+						},
+					},
+				},
+				fs.Column{
+					Qualifier: "",
+					Name:      "t",
+					BetweenOperator: fs.BetweenOperator{
+						fs.BetweenOperatorFroms{
+							fs.LiteralValue{
+								fs.StringValue{
+									ValidationFunc: func(val string) bool { return cast.ToTime(val) != time.Time{} },
+								},
+							},
+						},
+						fs.BetweenOperatorTos{
+							fs.LiteralValue{
+								fs.StringValue{
+									ValidationFunc: func(val string) bool { return cast.ToTime(val) != time.Time{} },
 								},
 							},
 						},
@@ -403,6 +425,25 @@ func TestFilterSQLParseNotInOperatorIntegerValues(t *testing.T) {
 	query = "a NOT IN ('test', 2)"
 	parsedQuery, err = config.Parse(query)
 	assert.EqualError(t, err, "unsupported or invalid RHS: a not in ('test', 2)")
+	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseBetweenOperator(t *testing.T) {
+	config := commonConfig()
+
+	query := "t BETWEEN '2023-05-14 00:00:00.000000000' AND '2023-05-14 03:00:00.000000000'"
+	parsedQuery, err := config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "t between '2023-05-14 00:00:00.000000000' and '2023-05-14 03:00:00.000000000'", parsedQuery)
+
+	query = "a BETWEEN '2023-05-14 00:00:00.000000000' AND '2023-05-14 03:00:00.000000000'"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported operator: a between '2023-05-14 00:00:00.000000000' and '2023-05-14 03:00:00.000000000'")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "t BETWEEN 'cheese' AND '2023-05-14 03:00:00.000000000'"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: t between 'cheese' and '2023-05-14 03:00:00.000000000'")
 	assert.Equal(t, "", parsedQuery)
 }
 
