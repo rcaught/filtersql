@@ -96,12 +96,39 @@ func (config Config) validate(filter *sqlparser.Where) error {
 			} else {
 				return config.walkError("unsupported table name: %s", node)
 			}
+		case *sqlparser.BetweenExpr:
+			switch lhs := node.Left.(type) {
+			case *sqlparser.ColName:
+				if columnConfig, found := config.findColumn(lhs); found {
+					if columnConfig.BetweenOperator == nil {
+						return config.walkError("unsupported operator: %s", node)
+					}
+
+					from, fromFound := lo.Find(columnConfig.BetweenOperator.Froms(), func(from From) bool {
+						fromNodeType := fmt.Sprintf("%T", node.From)
+						return fromNodeType == from.nodeType()
+					})
+
+					to, toFound := lo.Find(columnConfig.BetweenOperator.Tos(), func(to To) bool {
+						toNodeType := fmt.Sprintf("%T", node.To)
+						return toNodeType == to.nodeType()
+					})
+
+					if (fromFound && toFound) && (from.valid(node.From) && to.valid(node.To)) {
+						return true, nil
+					} else {
+						return config.walkError("unsupported or invalid RHS: %s", node)
+					}
+				} else {
+					return config.walkError("unsupported operator: %s", node)
+				}
+			}
+
+			return config.walkError("unsupported between: %s", node)
 		case *sqlparser.ComparisonExpr:
 			switch lhs := node.Left.(type) {
 			case *sqlparser.ColName:
-				if columnConfig, found := lo.Find(config.allowedLeftColumns(), func(col Column) bool {
-					return lhs.Qualifier.Name.String() == col.Qualifier && lhs.Name.EqualString(col.Name)
-				}); found {
+				if columnConfig, found := config.findColumn(lhs); found {
 					cop, copFound := lo.Find(columnConfig.ComparisonOperators, func(op IComparisonOperator) bool {
 						return node.Operator.ToString() == op.ToString()
 					})
@@ -137,6 +164,12 @@ func (config Config) validate(filter *sqlparser.Where) error {
 	} else {
 		return nil
 	}
+}
+
+func (config Config) findColumn(lhs *sqlparser.ColName) (Column, bool) {
+	return lo.Find(config.allowedLeftColumns(), func(col Column) bool {
+		return lhs.Qualifier.Name.String() == col.Qualifier && lhs.Name.EqualString(col.Name)
+	})
 }
 
 func (config Config) allowedLeftColumns() []Column {

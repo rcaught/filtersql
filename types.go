@@ -30,11 +30,32 @@ type (
 	}
 	Rights []Right
 
+	From interface {
+		iFrom()
+		valid(any) bool
+		nodeType() string
+	}
+	Froms []From
+
+	To interface {
+		iTo()
+		valid(any) bool
+		nodeType() string
+	}
+	Tos []To
+
 	ComparisonOperators []IComparisonOperator
 	IComparisonOperator interface {
 		iComparisonOperator()
 		ToString() string
 		Rights() Rights
+	}
+
+	IBetweenOperator interface {
+		iBetweenOperator()
+		ToString() string
+		Froms() Froms
+		Tos() Tos
 	}
 )
 
@@ -42,6 +63,7 @@ type Column struct {
 	Qualifier           string
 	Name                string
 	ComparisonOperators ComparisonOperators
+	BetweenOperator     IBetweenOperator
 }
 
 func (Column) iLeft() {}
@@ -230,6 +252,37 @@ func (eo NotInOperator) Rights() Rights {
 	})
 }
 
+// BetweenOperator
+type (
+	BetweenOperatorFroms []IBetweenOperatorFrom
+	BetweenOperatorTos   []IBetweenOperatorTo
+	IBetweenOperatorFrom interface {
+		iBetweenOperatorFrom()
+		From() From
+	}
+	IBetweenOperatorTo interface {
+		iBetweenOperatorTo()
+		To() To
+	}
+	BetweenOperator struct {
+		FromsAccessor BetweenOperatorFroms
+		TosAccessor   BetweenOperatorTos
+	}
+)
+
+func (BetweenOperator) ToString() string  { return "between" }
+func (BetweenOperator) iBetweenOperator() {}
+func (bo BetweenOperator) Froms() Froms {
+	return lo.Map(bo.FromsAccessor, func(item IBetweenOperatorFrom, index int) From {
+		return item.From()
+	})
+}
+func (bo BetweenOperator) Tos() Tos {
+	return lo.Map(bo.TosAccessor, func(item IBetweenOperatorTo, index int) To {
+		return item.To()
+	})
+}
+
 // LiteralValueType
 type (
 	ILiteralValueType interface {
@@ -247,8 +300,14 @@ func (LiteralValue) iGreaterThanOperatorRight()        {}
 func (LiteralValue) iLessThanOperatorRight()           {}
 func (LiteralValue) iGreaterThanOrEqualOperatorRight() {}
 func (LiteralValue) iLessThanOrEqualOperatorRight()    {}
+func (LiteralValue) iBetweenOperatorFrom()             {}
+func (LiteralValue) iBetweenOperatorTo()               {}
 func (LiteralValue) iRight()                           {}
 func (lv LiteralValue) Right() Right                   { return lv }
+func (LiteralValue) iFrom()                            {}
+func (lv LiteralValue) From() From                     { return lv }
+func (LiteralValue) iTo()                              {}
+func (lv LiteralValue) To() To                         { return lv }
 func (lv LiteralValue) valid(e any) bool               { return lv.ValueType.valid(e) }
 func (LiteralValue) nodeType() string                  { return "*sqlparser.Literal" }
 
