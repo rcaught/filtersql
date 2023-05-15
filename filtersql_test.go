@@ -225,6 +225,16 @@ func TestFilterSQLParseComparisonsColumn(t *testing.T) {
 	parsedQuery, err = config.Parse(query)
 	assert.EqualError(t, err, "unsupported comparison: c = 'test'")
 	assert.Equal(t, "", parsedQuery)
+
+	query = "'a' = 'a'"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported comparison: 'a' = 'a'")
+	assert.Equal(t, "", parsedQuery)
+
+	query = "a = a"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported or invalid RHS: a = a")
+	assert.Equal(t, "", parsedQuery)
 }
 
 func TestFilterSQLParseComparisonsLiteralString(t *testing.T) {
