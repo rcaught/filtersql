@@ -208,11 +208,10 @@ func (config Config) walkError(message string, node sqlparser.SQLNode) (bool, er
 }
 
 func (config Config) validateGroupingParens(query string) error {
-	stringValsRegex := regexp.MustCompile(`(\"|\').*?(\"|\')`)
-	noValuesQuery := stringValsRegex.ReplaceAllString(query, "''")
+	noStringValues := noStringValues(query)
 
-	leftParens := strings.Count(noValuesQuery, "(")
-	rightParents := strings.Count(noValuesQuery, ")")
+	leftParens := strings.Count(noStringValues, "(")
+	rightParents := strings.Count(noStringValues, ")")
 
 	max := config.Allow.GroupingParens
 
@@ -224,7 +223,9 @@ func (config Config) validateGroupingParens(query string) error {
 }
 
 func (config Config) validateAnds(query string) error {
-	lowercaseQuery := strings.ToLower(query)
+	noStringValues := noStringValues(query)
+
+	lowercaseQuery := strings.ToLower(noStringValues)
 	andsCount := strings.Count(lowercaseQuery, " and ")
 
 	max := config.Allow.Ands
@@ -237,7 +238,9 @@ func (config Config) validateAnds(query string) error {
 }
 
 func (config Config) validateOrs(query string) error {
-	lowercaseQuery := strings.ToLower(query)
+	noStringValues := noStringValues(query)
+
+	lowercaseQuery := strings.ToLower(noStringValues)
 	orsCount := strings.Count(lowercaseQuery, " or ")
 
 	max := config.Allow.Ors
@@ -250,7 +253,9 @@ func (config Config) validateOrs(query string) error {
 }
 
 func (config Config) validateNots(query string) error {
-	lowercaseQuery := strings.ToLower(query)
+	noStringValues := noStringValues(query)
+
+	lowercaseQuery := strings.ToLower(noStringValues)
 	notsCount := strings.Count(lowercaseQuery, " not ")
 
 	max := config.Allow.Nots
@@ -260,4 +265,9 @@ func (config Config) validateNots(query string) error {
 	} else {
 		return fmt.Errorf("unsupported not")
 	}
+}
+
+func noStringValues(query string) string {
+	stringValsRegex := regexp.MustCompile(`(\"|\').*?(\"|\')`)
+	return stringValsRegex.ReplaceAllString(query, "''")
 }
