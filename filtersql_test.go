@@ -14,7 +14,7 @@ func commonConfig() fs.Config {
 	return fs.Config{
 		Debug: true,
 		Allow: fs.Allow{
-			Ands:           true,
+			Ands:           fs.UNLIMITED,
 			Ors:            true,
 			Nots:           true,
 			GroupingParens: fs.UNLIMITED,
@@ -217,9 +217,9 @@ func TestFilterSQLParseAnd(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "a = 'test' and b = 2", parsedQuery)
 
-	config.Allow.Ands = false
+	config.Allow.Ands = 0
 	parsedQuery, err = config.Parse(query)
-	assert.EqualError(t, err, "unsupported and: a = 'test' and b = 2")
+	assert.EqualError(t, err, "unsupported and")
 	assert.Equal(t, "", parsedQuery)
 }
 

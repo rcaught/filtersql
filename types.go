@@ -14,7 +14,7 @@ type Config struct {
 type Allow struct {
 	Comparisons    Comparisons
 	Ors            bool
-	Ands           bool
+	Ands           int
 	Nots           bool
 	GroupingParens int
 }

@@ -38,6 +38,10 @@ func (config Config) Parse(filter string) (string, error) {
 		return "", err
 	}
 
+	if err = config.validateAnds(sql); err != nil {
+		return "", err
+	}
+
 	if err = config.validate(where); err != nil {
 		return "", err
 	}
@@ -53,7 +57,8 @@ func (config Config) validate(filter *sqlparser.Where) error {
 		case *sqlparser.Where, *sqlparser.Literal, sqlparser.ValTuple:
 			return true, nil
 		case *sqlparser.AndExpr:
-			if config.Allow.Ands {
+			max := config.Allow.Ands
+			if max == UNLIMITED || max > 0 {
 				return true, nil
 			} else {
 				return config.walkError("unsupported and: %s", node)
@@ -199,11 +204,24 @@ func (config Config) validateGroupingParens(query string) error {
 	leftParens := strings.Count(noValuesQuery, "(")
 	rightParents := strings.Count(noValuesQuery, ")")
 
-	pm := config.Allow.GroupingParens
+	max := config.Allow.GroupingParens
 
-	if leftParens == rightParents && (pm == UNLIMITED || leftParens <= pm) {
+	if leftParens == rightParents && (max == UNLIMITED || leftParens <= max) {
 		return nil
 	} else {
 		return fmt.Errorf("unsupported parens")
+	}
+}
+
+func (config Config) validateAnds(query string) error {
+	lowercaseQuery := strings.ToLower(query)
+	andsCount := strings.Count(lowercaseQuery, " and ")
+
+	max := config.Allow.Ands
+
+	if max == UNLIMITED || andsCount <= max {
+		return nil
+	} else {
+		return fmt.Errorf("unsupported and")
 	}
 }
