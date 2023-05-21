@@ -22,4 +22,4 @@ jobs:
           version: latest
           working-directory: ./
           args: --timeout 60s --max-same-issues 50
-          go_version: "1.18"
+          version: "1.18"
