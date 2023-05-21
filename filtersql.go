@@ -42,7 +42,7 @@ func (config Config) Parse(filter string) (string, error) {
 		return "", err
 	}
 
-	if err = config.validate(where); err != nil {
+	if err = config.validateAST(where); err != nil {
 		return "", err
 	}
 
@@ -51,7 +51,7 @@ func (config Config) Parse(filter string) (string, error) {
 	return result, nil
 }
 
-func (config Config) validate(filter *sqlparser.Where) error {
+func (config Config) validateAST(filter *sqlparser.Where) error {
 	fun := func(node sqlparser.SQLNode) (bool, error) {
 		switch node := node.(type) {
 		case *sqlparser.Where, *sqlparser.Literal, sqlparser.ValTuple:
