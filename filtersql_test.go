@@ -184,6 +184,11 @@ func TestFilterSQLParseMultipleQueries(t *testing.T) {
 	parsedQuery, err := config.Parse(query)
 	assert.EqualError(t, err, "unsupported syntax")
 	assert.Equal(t, "", parsedQuery)
+
+	query = "a = 'test' AND (SELECT * FROM passwords)"
+	parsedQuery, err = config.Parse(query)
+	assert.EqualError(t, err, "unsupported syntax: (select * from passwords)")
+	assert.Equal(t, "", parsedQuery)
 }
 
 func TestFilterSQLParseUnsupportedExpression(t *testing.T) {
