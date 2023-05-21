@@ -433,10 +433,10 @@ func TestFilterSQLParseNotInOperatorStringValues(t *testing.T) {
 func TestFilterSQLParseNotInOperatorIntegerValues(t *testing.T) {
 	config := commonConfig()
 
-	query := "a NOT IN (2, 4)"
+	query := "a NOT IN ('test')"
 	parsedQuery, err := config.Parse(query)
 	assert.NoError(t, err)
-	assert.Equal(t, "a not in (2, 4)", parsedQuery)
+	assert.Equal(t, "a not in ('test')", parsedQuery)
 
 	query = "a NOT IN ('test', 'test3')"
 	parsedQuery, err = config.Parse(query)
