@@ -20,4 +20,4 @@ jobs:
         with:
           version: latest
           working-directory: ./
-          args: --timeout 60s --max-same-issues 50
+          args: --timeout 120s --max-same-issues 50
