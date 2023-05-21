@@ -42,6 +42,10 @@ func (config Config) Parse(filter string) (string, error) {
 		return "", err
 	}
 
+	if err = config.validateOrs(sql); err != nil {
+		return "", err
+	}
+
 	if err = config.validateNots(sql); err != nil {
 		return "", err
 	}

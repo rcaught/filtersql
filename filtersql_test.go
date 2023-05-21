@@ -233,7 +233,7 @@ func TestFilterSQLParseOr(t *testing.T) {
 
 	config.Allow.Ors = 0
 	parsedQuery, err = config.Parse(query)
-	assert.EqualError(t, err, "unsupported or: a = 'test' or b = 2")
+	assert.EqualError(t, err, "unsupported or")
 	assert.Equal(t, "", parsedQuery)
 }
 
@@ -474,7 +474,7 @@ func TestFilterSQLParseGroupingParens(t *testing.T) {
 	query := "a = 'test' AND (a = 'test' OR (b = 2 OR (a != 'test' AND (a = 'test' OR b = 2))))"
 	config.Allow.GroupingParens = 0
 	parsedQuery, err := config.Parse(query)
-	assert.EqualError(t, err, "unsupported parens: a = 'test' AND (a = 'test' OR (b = 2 OR (a != 'test' AND (a = 'test' OR b = 2))))")
+	assert.EqualError(t, err, "unsupported parens")
 	assert.Equal(t, "", parsedQuery)
 
 	config.Allow.GroupingParens = 20
