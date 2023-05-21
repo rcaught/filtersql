@@ -64,7 +64,8 @@ func (config Config) validateAST(filter *sqlparser.Where) error {
 				return config.walkError("unsupported and: %s", node)
 			}
 		case *sqlparser.OrExpr:
-			if config.Allow.Ors {
+			max := config.Allow.Ors
+			if max == UNLIMITED || max > 0 {
 				return true, nil
 			} else {
 				return config.walkError("unsupported or: %s", node)
@@ -223,5 +224,18 @@ func (config Config) validateAnds(query string) error {
 		return nil
 	} else {
 		return fmt.Errorf("unsupported and")
+	}
+}
+
+func (config Config) validateOrs(query string) error {
+	lowercaseQuery := strings.ToLower(query)
+	orsCount := strings.Count(lowercaseQuery, " or ")
+
+	max := config.Allow.Ors
+
+	if max == UNLIMITED || orsCount <= max {
+		return nil
+	} else {
+		return fmt.Errorf("unsupported or")
 	}
 }
