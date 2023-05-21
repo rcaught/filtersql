@@ -15,7 +15,7 @@ type Allow struct {
 	Comparisons    Comparisons
 	Ors            int
 	Ands           int
-	Nots           bool
+	Nots           int
 	GroupingParens int
 }
 

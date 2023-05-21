@@ -42,6 +42,10 @@ func (config Config) Parse(filter string) (string, error) {
 		return "", err
 	}
 
+	if err = config.validateNots(sql); err != nil {
+		return "", err
+	}
+
 	if err = config.validateAST(where); err != nil {
 		return "", err
 	}
@@ -71,7 +75,8 @@ func (config Config) validateAST(filter *sqlparser.Where) error {
 				return config.walkError("unsupported or: %s", node)
 			}
 		case *sqlparser.NotExpr:
-			if config.Allow.Nots {
+			max := config.Allow.Nots
+			if max == UNLIMITED || max > 0 {
 				return true, nil
 			} else {
 				return config.walkError("unsupported not: %s", node)
@@ -237,5 +242,18 @@ func (config Config) validateOrs(query string) error {
 		return nil
 	} else {
 		return fmt.Errorf("unsupported or")
+	}
+}
+
+func (config Config) validateNots(query string) error {
+	lowercaseQuery := strings.ToLower(query)
+	notsCount := strings.Count(lowercaseQuery, " not ")
+
+	max := config.Allow.Nots
+
+	if max == UNLIMITED || notsCount <= max {
+		return nil
+	} else {
+		return fmt.Errorf("unsupported not")
 	}
 }

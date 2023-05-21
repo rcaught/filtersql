@@ -16,7 +16,7 @@ func commonConfig() fs.Config {
 		Allow: fs.Allow{
 			Ands:           fs.UNLIMITED,
 			Ors:            fs.UNLIMITED,
-			Nots:           true,
+			Nots:           fs.UNLIMITED,
 			GroupingParens: fs.UNLIMITED,
 			Comparisons: fs.Comparisons{
 				fs.Column{
@@ -245,9 +245,9 @@ func TestFilterSQLParseNot(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "not (a = 'test' or b = 2)", parsedQuery)
 
-	config.Allow.Nots = false
+	config.Allow.Nots = 0
 	parsedQuery, err = config.Parse(query)
-	assert.EqualError(t, err, "unsupported not: not (a = 'test' or b = 2)")
+	assert.EqualError(t, err, "unsupported not")
 	assert.Equal(t, "", parsedQuery)
 }
 
