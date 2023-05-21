@@ -3,12 +3,15 @@ package filtersql
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/samber/lo"
 	"vitess.io/vitess/go/vt/sqlparser"
 )
+
+const UNLIMITED = -1
 
 func (config Config) Parse(filter string) (string, error) {
 	if strings.Trim(filter, " ") == "" {
@@ -31,8 +34,11 @@ func (config Config) Parse(filter string) (string, error) {
 
 	where := stmt.(*sqlparser.Select).Where
 
-	err = config.validate(where)
-	if err != nil {
+	if err = config.validateGroupingParens(sql); err != nil {
+		return "", err
+	}
+
+	if err = config.validate(where); err != nil {
 		return "", err
 	}
 
@@ -184,4 +190,20 @@ func (config Config) walkError(message string, node sqlparser.SQLNode) (bool, er
 		spew.Dump(node)
 	}
 	return false, fmt.Errorf(message, sqlparser.String(node))
+}
+
+func (config Config) validateGroupingParens(query string) error {
+	stringValsRegex := regexp.MustCompile(`(\"|\').*?(\"|\')`)
+	noValuesQuery := stringValsRegex.ReplaceAllString(query, "''")
+
+	leftParens := strings.Count(noValuesQuery, "(")
+	rightParents := strings.Count(noValuesQuery, ")")
+
+	pm := config.Allow.GroupingParens
+
+	if leftParens == rightParents && (pm == UNLIMITED || leftParens <= pm) {
+		return nil
+	} else {
+		return fmt.Errorf("unsupported parens")
+	}
 }

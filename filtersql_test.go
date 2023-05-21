@@ -14,9 +14,10 @@ func commonConfig() fs.Config {
 	return fs.Config{
 		Debug: true,
 		Allow: fs.Allow{
-			Ands: true,
-			Ors:  true,
-			Nots: true,
+			Ands:           true,
+			Ors:            true,
+			Nots:           true,
+			GroupingParens: fs.UNLIMITED,
 			Comparisons: fs.Comparisons{
 				fs.Column{
 					Qualifier: "",
@@ -121,6 +122,21 @@ func commonConfig() fs.Config {
 								fs.LiteralValue{
 									fs.StringValue{
 										ValidationFunc: func(val string) bool { return val == "test" },
+									},
+								},
+							},
+						},
+					},
+				},
+				fs.Column{
+					Qualifier: "",
+					Name:      "e",
+					ComparisonOperators: fs.ComparisonOperators{
+						fs.EqualsOperator{
+							fs.EqualsOperatorRights{
+								fs.LiteralValue{
+									fs.StringValue{
+										ValidationFunc: func(val string) bool { return true },
 									},
 								},
 							},
@@ -445,5 +461,26 @@ func TestFilterSQLParseBetweenOperator(t *testing.T) {
 	parsedQuery, err = config.Parse(query)
 	assert.EqualError(t, err, "unsupported or invalid RHS: t between 'cheese' and '2023-05-14 03:00:00.000000000'")
 	assert.Equal(t, "", parsedQuery)
+}
+
+func TestFilterSQLParseGroupingParens(t *testing.T) {
+	config := commonConfig()
+
+	query := "a = 'test' AND (a = 'test' OR (b = 2 OR (a != 'test' AND (a = 'test' OR b = 2))))"
+	config.Allow.GroupingParens = 0
+	parsedQuery, err := config.Parse(query)
+	assert.EqualError(t, err, "unsupported parens: a = 'test' AND (a = 'test' OR (b = 2 OR (a != 'test' AND (a = 'test' OR b = 2))))")
+	assert.Equal(t, "", parsedQuery)
+
+	config.Allow.GroupingParens = 20
+	parsedQuery, err = config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "a = 'test' and (a = 'test' or (b = 2 or a != 'test' and (a = 'test' or b = 2)))", parsedQuery)
+
+	config.Allow.GroupingParens = 0
+	query = "e = '(test)' AND e = ')' AND e = '('"
+	parsedQuery, err = config.Parse(query)
+	assert.NoError(t, err)
+	assert.Equal(t, "e = '(test)' and e = ')' and e = '('", parsedQuery)
 }
 
