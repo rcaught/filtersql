@@ -488,4 +488,3 @@ func TestFilterSQLParseGroupingParens(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "e = '(test)' and e = ')' and e = '('", parsedQuery)
 }
-
