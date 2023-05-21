@@ -331,7 +331,7 @@ inet.af/netaddr
 # k8s.io/apimachinery v0.26.1
 ## explicit; go 1.19
 k8s.io/apimachinery/pkg/util/sets
-# vitess.io/vitess v0.16.1
+# vitess.io/vitess v0.16.2
 ## explicit; go 1.20
 vitess.io/vitess/go/acl
 vitess.io/vitess/go/bytes2

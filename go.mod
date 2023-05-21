@@ -6,7 +6,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/samber/lo v1.38.1
 	github.com/spf13/cast v1.5.1
-	vitess.io/vitess v0.16.1
+	vitess.io/vitess v0.16.2
 )
 
 require (
